@@ -3,12 +3,11 @@
 
 *Write a short description about the course and add a link to your GitHub repository here. This is an R Markdown (.Rmd) file so you can use R Markdown syntax.*
 
-I am feeling a bit ## overwhelmed, but I am going to keep an open mind on learning these new tools.
+#### My Answers:
+I am feeling a bit **overwhelmed**, but I am going to keep an open mind on learning these new tools. I am hoping to learn about new systems that will allow me to collaborate on projects and learn **more** about coding. I heard about this course through a **Yammer** group that I follow. I have informed others in my department and former classmates about the course also.  
 
 here is a link to my Github repository:
 https://github.com/brajamaki/IODS-project
 
-here is a link to my diary page:
-https://brajamaki.github.io/IODS-project/
 
 Link to the [diary page](https://brajamaki.github.io/IODS-project/)

@@ -1,0 +1,153 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\providecommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{}
+    \pretitle{\vspace{\droptitle}}
+  \posttitle{}
+    \author{}
+    \preauthor{}\postauthor{}
+    \date{}
+    \predate{}\postdate{}
+  
+
+\begin{document}
+
+\section{Chapter 2: Reading Data}\label{chapter-2-reading-data}
+
+learning2014\textless{}-read.table(``D:\textbackslash{}IODS-project\textbackslash{}IODS-project\textbackslash{}Data\textbackslash{}learning2014.csv'')
+
+\section{Description of the data
+set:}\label{description-of-the-data-set}
+
+\begin{verbatim}
+str(learning2014)
+\end{verbatim}
+
+\textbf{N=166} with \emph{7 variables (gender, age, attitude, deep,
+stra, surf and points.}
+
+\textbf{Gender} is a a dicotious variable meaning it can have either
+female (``F''= female) or male (``M''= male).
+
+\textbf{Age} is a continous variable with positive numbers.
+\textbf{Attitude} is based off of the ``global attitude towards
+statistics''.
+
+\textbf{Deep}, \textbf{stra} (structure), \textbf{surf} (surface) are
+variables based on the \emph{mean} of likert scores (1-5) to clustered
+questions.
+
+\textbf{Points} represent the exam points.
+
+\section{Graphical display of the
+data:}\label{graphical-display-of-the-data}
+
+\section{From DataCamp}\label{from-datacamp}
+
+pairs(learning2014{[}-1{]}, col = learning2014\$gender) library (GGally)
+library(ggplot2) p \textless{}- ggpairs(learning2014, mapping = aes(col
+= gender, alpha = 0.3), lower = list(combo = wrap(``facethist'', bins =
+20))) `''\{r dpi = 72\} ggpairs(learning2014, mapping = aes(col =
+gender, alpha = 0.3), lower = list(combo = wrap(``facethist'', bins =
+20)))
+
+\begin{verbatim}
+##WRITE info about the table##
+3Show a graphical overview of the data and show summaries of the variables in the data. Describe and interpret the outputs, commenting on the distributions of the variables and the relationships between them. (0-3 points)
+
+#Regression Model:
+Choose three variables as explanatory variables and fit a regression model where exam points is the target (dependent) variable. Show a summary of the fitted model and comment and interpret the results. Explain and interpret the statistical test related to the model parameters. If an explanatory variable in your model does not have a statistically significant relationship with the target variable, remove the variable from the model and fit the model again without it. (0-4 points)
+
+#Summary of fitted plot:
+Using a summary of your fitted model, explain the relationship between the chosen explanatory variables and the target variable (interpret the model parameters). Explain and interpret the multiple R squared of the model. (0-3 points)
+
+#Diagnostic plots:
+Produce the following diagnostic plots: Residuals vs Fitted values, Normal QQ-plot and Residuals vs Leverage. Explain the assumptions of the model and interpret the validity of those assumptions based on the diagnostic plots. (0-3 points)
+\end{verbatim}
+
+``` Residual vs fitted plot tests the assumptions of wether the
+relationship between the predictor variables and outcome variable are
+linear and whether there is equal variance along the regression line.
+
+Normal QQ-plot is a differnt type of scatter plot that looks at the
+distibution of the dependent and indepedent variable. If they are
+similarly normally distributed the dots of the plot should roughly form
+a line. If the distributions are not normally distributed the dots will
+take on a different shape (i.e.~curved)
+
+Residuals vs Leverage plot helps to identify influential data points on
+the model, such as outliers, .
+
+
+\end{document}

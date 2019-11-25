@@ -1,0 +1,181 @@
+---
+title: "Chapter four"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+**1.** ohh fun, Rmarkdown time.
+
+
+**2.** This is the dataset to be used:
+
+```{r readdata,echo=TRUE,results='hide',message=FALSE,warning=FALSE}
+
+library ("MASS")
+data ("Boston")
+cor_matrix <- cor( Boston )
+```
+**Information about the dataset can be found here:** 
+<https://stat.ethz.ch/R-manual/R-devel/library/MASS/html/Boston.html>
+
+**These packages need to be installed for this project:**
+
+install.packages ("corrplot")
+install.packages ("tidyr")
+
+```
+library ("corrplot")
+library ("tidyr")
+```
+ Summary of the data:
+```{r}
+str( Boston )
+summary( Boston  )
+```
+
+There are 506 observations and 14 variables. Most variabels are numeric, except chas and rad which are interger type. The summary of the variables show the minumum, maximum, 1st and 3rd quartile, along with median and mean. 
+
+**3.** Graphical overview of the data:
+```{r}
+pairs( Boston )
+```
+
+The pairs plot has made a matrix of scatter plots. It is difficult to really see anything from this plot.
+
+
+**Correlation of the variables:**
+
+```{r}
+corrplot::corrplot(cor_matrix, method="circle", type="upper", cl.pos="b", tl.pos="d", tl.cex = 0.6)
+```
+
+This graphical overview is looking at the correlations of the different variables. the size of the circles demonstrate the correclation. The larger th circle shows stronger of the correlation comapred to smaller circles. The color of the circle shows the strength and if it is a positive (blue hues) or negative (red hues).
+
+one can see variables "chas" and "ras" have no correlation (the box is blank) while "nox" and "dis" have a strong negative correlation (large red circle). "rad" and "tax" appear to have the strongest positive correlation.
+
+**4.** let's scale the data to standardize the whole data set
+```{r}
+boston_scaled <- scale(Boston)
+summary(boston_scaled)
+
+```
+
+You can tell the data set is scaled because all the variable means are zero. 
+
+**change the data frame to to the new scaled dataframe:**
+```{r}
+boston_scaled <- as.data.frame(boston_scaled)
+```
+
+**Categorizing crime rate by creating a new variable:**
+```{r}
+bins <- quantile(boston_scaled$crim)
+bins
+crime <- cut(boston_scaled$crim, breaks = bins, include.lowest = TRUE, labels = c("low", "med_low", "med_high", "high"))
+table(crime)
+```
+
+**These codes will drop the original crime variable and add the new categorical scaled variable to the dataset.**
+``` {r}
+boston_scaled <- dplyr::select(boston_scaled, -crim)
+boston_scaled <- data.frame(boston_scaled, crime)
+```
+
+**Now it is time to divide the dataset into a train and test datasets!**
+``` {r}
+n <- nrow(boston_scaled)
+ind <- sample(n,  size = n * 0.8)
+train <- boston_scaled[ind,]
+test  <- boston_scaled[-ind,]
+```
+
+**5.** Linear discriminant analysis (LDA)
+write more here about that it is
+``` {r}
+lda.fit <- lda(crime ~ ., data = train)
+lda.fit
+lda.arrows <- function(x, myscale = 1, arrow_heads = 0.1, color = "orange", tex = 0.75, choices = c(1,2)){
+  heads <- coef(x)
+  arrows(x0 = 0, y0 = 0, 
+         x1 = myscale * heads[,choices[1]], 
+         y1 = myscale * heads[,choices[2]], col=color, length = arrow_heads)
+  text(myscale * heads[,choices], labels = row.names(heads), 
+       cex = tex, col=color, pos=3)
+}
+classes <- as.numeric(train$crime)
+plot(lda.fit, dimen = 2, col = classes, pch = classes)
+lda.arrows(lda.fit, myscale = 1)
+```
+
+**6.** Save categorical variables into a separate variable, and removing categorical variables from test set
+```{r}
+test_labels <- test$crime
+test_labels
+test     <- dplyr::select( test, -crime )
+test
+```
+
+**Classify with LDA:**
+``` {r}
+lda.pred <- predict(lda.fit, newdata = test)
+table(correct = test_labels, predicted = lda.pred$class)
+```
+
+It appears the LDA model predicted the high category correclty, but was not great at predicting other categories.
+
+**7.** Now let't try Clustering!
+```{r}
+library ("MASS")
+data ("Boston")
+```
+
+**let's also scale the data again:**
+``` {r}
+```{r}
+boston_scaled <- scale(Boston)
+summary(boston_scaled)
+```
+
+**Distances between observations:**
+``` {r}
+dist_eu <- dist(boston_scaled)
+summary(dist_eu)
+dist_man <- dist(boston_scaled, method = 'manhattan')
+summary(dist_man)
+```
+
+**K-means clustering time! using 3 clusters:**
+``` {r}
+km <-kmeans(boston_scaled, centers = 3)
+pairs(boston_scaled, col = km$cluster)
+```
+
+**let's try 4 clusters!**
+``` {r}
+km <-kmeans(boston_scaled, centers = 4)
+pairs(boston_scaled, col = km$cluster)
+```
+
+Both plots are difficult to read, but the 4 clusters plots show a lot of overlap of the colored areas comapred to the 3 clusters.
+
+
+**How do I know which one is better? let's try this test**
+
+install.packages( "ggplot2" )
+``` {r}
+library( "ggplot2" )
+set.seed(123)
+k_max <- 10
+twcss <- sapply(1:k_max, function(k){kmeans(boston_scaled, k)$tot.withinss})
+qplot(x = 1:k_max, y = twcss, geom = 'line')
+```
+
+WOW, it looks like the "arm pit" is around 2, the place where there is a sudden drop.
+
+**let's test 2 clusters and plot it!**
+``` {r}
+km <-kmeans(boston_scaled, centers = 2)
+pairs(boston_scaled, col = km$cluster)
+```

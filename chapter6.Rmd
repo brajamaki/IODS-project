@@ -1,0 +1,154 @@
+---
+title: "Chapter 6"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+#RATS... they are going to take over the world!
+This is the code to the data:
+```{r readdata,echo=TRUE,results='hide',message=FALSE,warning=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+RATS <- read.table("https://raw.githubusercontent.com/KimmoVehkalahti/MABS/master/Examples/data/rats.txt", header = TRUE, sep = '\t')
+```
+
+
+Factor variables ID and Group
+```{r}
+RATS$ID <- factor(RATS$ID)
+RATS$Group <- factor(RATS$Group)
+
+```
+
+... and then convert data to long form
+```{r}
+RATSL <- RATS %>%
+  gather(key = WD, value = Weight, -ID, -Group) %>%
+  mutate(Time = as.integer(substr(WD,3,4))) 
+```
+
+
+**1.** Implementation of Chapter 8 using the RATS data!
+
+```{r}
+ggplot(RATSL, aes(x = Time, y = Weight, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  theme(legend.position = "none") + 
+  scale_y_continuous(limits = c(min(RATSL$Weight), max(RATSL$Weight)))
+  
+```
+
+*This plot show the weights over the study period of the rats in the different groups. It is easy to see changes in weight.*
+
+## Standardise the variable weight
+``` {r}
+RATSL <- RATSL %>%
+  group_by(Time) %>%
+  mutate(stdWeight = (Weight - mean(Weight))/sd(Weight) ) %>%
+  ungroup()
+```
+
+## Plot again with the standardised Weights
+```{r}
+ggplot(RATSL, aes(x = Time, y = stdWeight, linetype = ID)) +
+  geom_line() +
+  scale_linetype_manual(values = rep(1:10, times=4)) +
+  facet_grid(. ~ Group, labeller = label_both) +
+  scale_y_continuous(name = "standardized Weight")
+```
+
+*By standardizing the weight there continues to be potential outliers.*
+
+## Number of weeks, baseline (week 0) included
+```{r}
+n <- RATSL$Time %>% unique() %>% length()
+```
+
+## Summary data with mean and standard error of bprs by treatment and week 
+```{r}
+
+RATSS <- RATSL %>%
+  group_by(Group, Time) %>%
+  summarise( mean = mean(Weight), se = sd(Weight)/sqrt(n) ) %>%
+  ungroup()
+```
+
+## Plot the mean profiles
+```{r}
+ggplot(RATSS, aes(x = Time, y = mean, linetype = Group, shape = Group)) +
+  geom_line() +
+  scale_linetype_manual(values = c(1,2,3)) +
+  geom_point(size=3) +
+  scale_shape_manual(values = c(1,2,3)) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se, linetype="1"), width=0.3) +
+  theme(legend.position = c(0.8,0.8)) +
+  scale_y_continuous(name = "mean(Weight) +/- se(Weight)")
+```
+
+*You can see the tha mean weight of the different groups increases over time.*
+
+## Create a summary data by treatment and subject with mean as the summary variable (ignoring baseline week 0).
+```{r}
+RATSL8S <- RATSL %>%
+  filter(Time > 0) %>%
+  group_by(Group, ID) %>%
+  summarise( mean=mean(Weight) ) %>%
+  ungroup()
+```
+
+## Draw a boxplot of the mean versus treatment
+```{r}
+ggplot(RATSL8S, aes(x = Group, y = mean)) +
+  geom_boxplot() +
+  stat_summary(fun.y = "mean", geom = "point", shape=23, size=4, fill = "blue") +
+  scale_y_continuous(name = "mean(Weight), Time points")
+```
+
+*There appears to be an outlier for each group. They might bias the conclusions from further comparisons of the groups, so we shall remove that subject from the data.*
+
+## Create a new data by filtering the outliers 
+```{r}
+RATS1 <-subset( RATSL8S, Group == 1 )
+RATS1 <- RATS1 %>% filter( mean < 300, mean > 250 )
+
+RATS2 <- subset( RATSL8S, Group == 2 )
+RATS2 <- RATS2 %>% filter( mean < 490, mean > 299 )
+
+RATS3 <- subset( RATSL8S, Group == 3 )
+RATS3 <- RATS3 %>% filter( mean < 550, mean > 500 )
+
+RATSuber <- rbind( RATS1, RATS2, RATS3 )
+```  
+## Adjust the ggplot code the draw the plot again with the new data
+```{r}
+ggplot(RATSuber, aes(x = Group, y = mean)) +
+   geom_boxplot() +
+   stat_summary(fun.y = "mean", geom = "point", shape=23, size=4, fill = "blue") +
+   scale_y_continuous(name = "mean(Weight), Time points")
+```
+
+*Yahoo! we got rid to the outliers! it took a while and a round about way to do it but they are gone. There are 13 observations in the RATSuber Data. Since there are more than 2 groups, we are unable to run the T-test.*
+
+
+## Add the baseline from the original data as a new variable to the summary data
+```{r}
+RATSL8S2 <- RATSL8S %>%
+  mutate(baseline = RATS$WD1)
+```
+
+## Fit the linear model with the mean as the response 
+``` {r}
+fit <- lm(mean ~ baseline + Group, data = RATSL8S2)
+```
+
+## Compute the analysis of variance table for the fitted model with anova
+```{r}
+anova(fit)
+```
+*Using week1 as the baseline, the baseline RATS is strongly related to the Weight values taken after treatment has begun, but there is still no evidence of a treatment difference even after conditioning on the baseline value.*

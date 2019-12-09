@@ -8,7 +8,7 @@ output:
 ---
 #RATS... they are going to take over the world!
 This is the code to the data:
-```{r readdata,echo=TRUE,results='hide',message=FALSE,warning=FALSE}
+```{r,echo=TRUE,results='hide',message=FALSE,warning=FALSE}
 library(dplyr)
 library(tidyr)
 library(ggplot2)
